@@ -1,0 +1,1327 @@
+---
+
+interface Props {
+  title?: string;
+  description?: string;
+  lang?: 'en' | 'es';
+  /** SNS プレビューに出す画像。そのページの hero を渡す。省略時はトップの hero */
+  ogImage?: string;
+  /** ページ固有の JSON-LD（schema.org）。渡した時は、自動で出す WebPage の代わりにこれを出す。エッセイ（Article）で使う */
+  jsonLd?: object | object[];
+  /** 記事ページのみ。同じ記事の Markdown（URL の後ろに .md）の場所を知らせる */
+  markdown?: boolean;
+}
+const {
+  title = 'Shoko "Seina" Shiraishi',
+  description = 'Shoko "Seina" Shiraishi — writer, musician, and creator based in Japan. Essays, music, mystery research, and stories.',
+  lang = 'en',
+  ogImage,
+  jsonLd,
+  markdown = false,
+} = Astro.props;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+// og:image は「そのページの hero があれば hero、無ければトップの hero」。
+// ページ側から ogImage="images/xxx.jpg" または "/images/xxx.jpg" で渡す（両方受ける）。
+// 2026-08-02 まで favicon（正方形の小さいアイコン）だったため、SNS のプレビューが
+// アイコン1枚だった。
+const OG_IMAGE_FALLBACK = 'images/cupie/hero_cupie.jpg'; // Cupie のトップの hero
+const ogImageRaw = ogImage ?? OG_IMAGE_FALLBACK;
+// site-media（CDN）の絶対URLはそのまま使う。ローカルの相対パスだけ BASE_URL を前置する。
+const ogImageURL = /^https?:\/\//.test(ogImageRaw)
+  ? ogImageRaw
+  : new URL(`${import.meta.env.BASE_URL}${ogImageRaw.replace(/^\//, '')}`, Astro.site);
+
+// hreflang（英語版とスペイン語版が「同じ内容の別言語」だと機械に伝える）
+//
+// 2026-07-31 まで一つも出ていなかった。そのため検索エンジンから見て en と es は
+// 無関係な別ページで、スペイン語で検索している人にも英語版が返っていた
+// （実例：Bing のスペイン語検索で /en/murakami が引用され、es 版は出てこなかった）。
+//
+// ルート（/）には出さない。/ は /en/ とは別のページとして存在しており、
+// ここで en → /en/ と宣言すると英語版が2つある状態を自分で作ってしまうため。
+// /en/ か /es/ の下にいる時だけ、両方を指す。
+const path = Astro.url.pathname;
+const langMatch = path.match(/^\/(en|es)(\/|$)/);
+const barePath = langMatch ? path.replace(/^\/(en|es)/, '') || '/' : null;
+const altUrls = barePath
+  ? {
+      en: new URL('/en' + barePath, Astro.site).href,
+      es: new URL('/es' + barePath, Astro.site).href,
+    }
+  : null;
+
+// トップページにだけ Person を出す。
+// @id は cabin1701.com 側と同じ値を使う。別々の人物として2人分作らないため
+// （blog.cabin1701.com の記事はすべて author.url = https://cabin1701.com/ を指している）。
+const isHome = /^\/(en\/|es\/)?$/.test(Astro.url.pathname);
+const personJsonLd = isHome
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'Person',
+      '@id': 'https://cabin1701.com/#person',
+      name: 'Shoko Shiraishi',
+      alternateName: ['白石昌子', 'Seina', 'Captain Seina'],
+      // url は cabin1701.com に固定。同じ @id のノードがサイトごとに違う住所を
+      // 名乗ると、機械から見て記述が食い違う。japoneson.com は sameAs 側に置く。
+      url: 'https://cabin1701.com/',
+      jobTitle: 'Writer',
+      sameAs: [
+        'https://japoneson.com/',
+        'https://blog.cabin1701.com/',
+        'https://fm.cabin1701.com/',
+        'https://crystallize.jp/aroma/',
+        'https://inori.japoneson.com/',
+        'https://cat.japoneson.com/',
+        'https://rock.japoneson.com/',
+      ],
+    }
+  : null;
+
+// ページごとの JSON-LD。ページ側から jsonLd が渡された時（エッセイの Article）はそれを出し、
+// 渡されなかったページは、全部 WebPage にする（2026-10-13、船長の決定：エッセイは Article、それ以外は WebPage）。
+const webPageJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: title,
+  description,
+  url: canonicalURL.href,
+  inLanguage: lang,
+  isPartOf: { '@type': 'WebSite', name: 'Cupie Danny', url: 'https://cupiedanny.com/' },
+};
+const pageJsonLdList = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [webPageJsonLd];
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" type="image/png" href={`${import.meta.env.BASE_URL}favicon.png`} />
+    <link rel="shortcut icon" href={`${import.meta.env.BASE_URL}favicon.ico`} />
+    <link rel="apple-touch-icon" href={`${import.meta.env.BASE_URL}favicon.png`} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <link rel="canonical" href={canonicalURL} />
+    {markdown && <link rel="alternate" type="text/markdown" href={`${canonicalURL.href.replace(/\/$/, '')}.md`} />}
+    {altUrls && (
+      <>
+        <link rel="alternate" hreflang="en" href={altUrls.en} />
+        <link rel="alternate" hreflang="es" href={altUrls.es} />
+        <link rel="alternate" hreflang="x-default" href={altUrls.en} />
+      </>
+    )}
+
+    {personJsonLd && (
+      <script type="application/ld+json" set:html={JSON.stringify(personJsonLd)} />
+    )}
+    {pageJsonLdList.map((ld) => (
+      <script type="application/ld+json" set:html={JSON.stringify(ld)} />
+    ))}
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:image" content={ogImageURL} />
+    {/*
+      og:locale（このページが何語向けかを SNS・AI に伝えるタグ）。
+      hreflang は検索エンジン向け、og:locale は SNS のプレビューや
+      OGP を読む側向けで、別々に要る。2026-08-02 まで一つも出ていなかった。
+      /en /es の下にいる時だけ alternate も出す（ルート / は対にならないため）。
+    */}
+    <meta property="og:locale" content={lang === 'es' ? 'es_ES' : 'en_US'} />
+    {altUrls && (
+      <meta property="og:locale:alternate" content={lang === 'es' ? 'en_US' : 'es_ES'} />
+    )}
+    <meta property="og:site_name" content="Cupie Danny" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageURL} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Asap+Condensed:wght@400;500;600&family=Baumans&family=Changa:wght@400;500;600&family=Cherry+Swash:wght@400;700&family=Cinzel:wght@400;500;600;700&family=Cinzel+Decorative:wght@400;700&family=Gabriela&family=Pathway+Gothic+One&family=Simonetta:ital,wght@0,400;0,900;1,400;1,900&family=Ysabeau+SC:wght@400;500;600;700&family=Cormorant+Infant:ital,wght@0,400;0,700;1,400;1,700&family=Fredoka:wght@400;500;600;700&family=Akaya+Telivigala&family=Gafata&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap"
+    />
+  </head>
+  <body data-pagefind-filter={`lang:${lang}`}>
+    <slot />
+    <script is:inline>
+      // Click a thumbnail to view it enlarged (simple lightbox).
+      // Applies to the Press page and to any ".press-block" section on project pages.
+      document.addEventListener('DOMContentLoaded', () => {
+        const pressPage = document.querySelector('main.page-press article');
+        const targets = [
+          ...(pressPage ? pressPage.querySelectorAll('img') : []),
+          ...document.querySelectorAll('.press-block img'),
+        ];
+        if (!targets.length) return;
+        const box = document.createElement('div');
+        box.className = 'press-lightbox';
+        const big = document.createElement('img');
+        box.appendChild(big);
+        document.body.appendChild(box);
+        targets.forEach((img) => {
+          img.addEventListener('click', () => {
+            big.src = img.currentSrc || img.src;
+            box.classList.add('open');
+          });
+        });
+        box.addEventListener('click', () => box.classList.remove('open'));
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') box.classList.remove('open');
+        });
+      });
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    --color-bg: #F0F8FF;            /* AliceBlue */
+    --color-text: #333;
+    --color-accent: #d00000;        /* crimson red */
+    --color-rule: #d00000;
+    --color-navy: #213265;          /* card title navy */
+    --color-muted: #666;
+    --font-body: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans JP", sans-serif;
+    --font-nav: "Pathway Gothic One", sans-serif;
+    --font-display-serif: "Simonetta", serif;
+    --font-display-cinzel: "Cinzel", serif;
+    --font-display-cinzel-dec: "Cinzel Decorative", serif;
+    --font-display-cherry: "Cherry Swash", cursive;
+    --font-display-baumans: "Baumans", cursive;
+    --font-display-ysabeau: "Ysabeau SC", serif;
+    --font-italic-quote: "Simonetta", serif;
+    --font-section: "Asap Condensed", sans-serif;
+    --container-max: 1100px;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-body);
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--color-text);
+    background: var(--color-bg);
+  }
+
+  a {
+    color: var(--color-accent);
+    text-decoration: none;
+  }
+  a:hover { text-decoration: underline; }
+
+  .container {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 1rem 1.5rem;
+  }
+
+  /* horizontal red rule (Projects-section style divider) */
+  .rule {
+    border: 0;
+    border-top: 1px solid var(--color-rule);
+    opacity: 0.5;
+    margin: 2.5rem 0;
+  }
+
+  /* section title (large serif uppercase, Cinzel Decorative) */
+  .section-title {
+    font-family: var(--font-display-cinzel-dec);
+    font-weight: 700;
+    font-size: 2.5rem;
+    text-align: center;
+    color: var(--color-text);
+    letter-spacing: 0.05em;
+    margin: 0 0 1rem;
+  }
+
+  /* page H1 (article title) */
+  article h1 {
+    font-family: var(--font-display-cinzel);
+    font-weight: 600;
+    font-size: 2.2rem;
+    color: var(--color-accent);
+    margin: 0 0 1.5rem;
+    text-align: center;
+  }
+
+  article h2 {
+    font-family: var(--font-display-cinzel);
+    font-weight: 500;
+    font-size: 1.8rem;
+    color: var(--color-accent);
+    margin: 2rem 0 0.75rem;
+    text-align: center;
+  }
+
+  /* All italic text inside article content → navy.
+     Used for book quotes, dialogue, italic narration. */
+  article em {
+    color: var(--color-navy);
+    font-style: italic;
+  }
+  article h3 {
+    font-family: var(--font-display-cinzel);
+    font-weight: 500;
+    font-size: 1.5rem;
+    color: var(--color-accent);
+    margin: 0.5rem 0 1rem;
+    text-align: center;
+  }
+
+  article img {
+    max-width: 600px;
+    width: 100%;
+    height: auto;
+    display: block;
+    margin: 1.5rem auto;
+  }
+
+  article table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+  article table th,
+  article table td {
+    border: 1px solid rgba(208, 0, 0, 0.25);
+    padding: 10px 14px;
+    text-align: left;
+    vertical-align: top;
+  }
+  article table th {
+    background: rgba(208, 0, 0, 0.06);
+    font-family: var(--font-display-cinzel);
+    font-weight: 600;
+    color: var(--color-accent);
+  }
+  article table td:first-child {
+    white-space: nowrap;
+    width: 1%;
+  }
+
+  article .flyer-block {
+    background: rgba(255, 220, 195, 0.35);
+    border: 1px solid var(--color-navy);
+    padding: 2.5rem 2rem 2rem;
+    margin: 2.5rem auto;
+    max-width: 760px;
+    text-align: center;
+  }
+  article .flyer-block h2 {
+    color: var(--color-accent);
+    margin-top: 0;
+  }
+  article .flyer-block h4 {
+    color: #2e7d32;
+    font-weight: 600;
+    margin: 1rem 0 1.5rem;
+    font-size: 1.15rem;
+  }
+  article .flyer-block img {
+    max-width: 480px;
+    margin: 1.5rem auto;
+  }
+  article .flyer-block p {
+    text-align: left;
+    max-width: 620px;
+    margin: 0 auto 1.2rem;
+  }
+  article .flyer-block ol {
+    text-align: left;
+    max-width: 620px;
+    margin: 0 auto 1.2rem;
+  }
+
+  article .cd-jacket-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin: 2rem auto;
+    max-width: 900px;
+  }
+  article .cd-jacket-row img {
+    max-width: 100%;
+    width: 100%;
+    margin: 0;
+  }
+  @media (max-width: 600px) {
+    article .cd-jacket-row { grid-template-columns: 1fr; }
+  }
+
+  article .musicians-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1.5rem 1rem;
+    margin: 2rem auto;
+    max-width: 1100px;
+  }
+  article .musician-card {
+    text-align: center;
+  }
+  article .musician-card img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    object-fit: cover;
+    margin: 0 0 0.5rem;
+    max-width: 100%;
+    border-radius: 50%;
+  }
+  article .musician-card h3 {
+    font-family: var(--font-display-cinzel);
+    font-size: 0.95rem;
+    color: var(--color-navy);
+    margin: 0 0 1rem;
+    text-align: center;
+    letter-spacing: 0.02em;
+  }
+  @media (max-width: 900px) {
+    article .musicians-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 600px) {
+    article .musicians-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  article .gallery-4col {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: nowrap;
+    margin: 2rem auto;
+    max-width: 1300px;
+    padding: 0 1rem;
+  }
+  article .gallery-4col p {
+    margin: 0 !important;
+    flex-shrink: 0;
+    line-height: 0;
+  }
+  article .gallery-4col a {
+    display: block;
+    line-height: 0;
+  }
+  article .gallery-4col img {
+    display: block;
+    height: 280px !important;
+    width: auto !important;
+    max-width: none !important;
+    margin: 0 !important;
+    object-fit: cover;
+  }
+  @media (max-width: 900px) {
+    article .gallery-4col img { height: 200px !important; }
+  }
+  @media (max-width: 720px) {
+    article .gallery-4col { flex-wrap: wrap; }
+    article .gallery-4col img { height: 180px !important; }
+  }
+
+  article .bridging-block {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 2rem;
+    margin: 2rem auto;
+    max-width: 1200px;
+    align-items: start;
+  }
+  article .bridging-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+    margin: 0;
+  }
+  article .bridging-text p { margin: 0 0 1rem; 
+  
+  
+  font-family: var(--font-italic-quote);
+    font-style: italic;
+    font-size: 19px;
+    line-height: 1.6;
+    color: var(--color-muted);
+
+    padding-left: 1.2rem;
+    margin: 0.1rem 0;
+  }
+  @media (max-width: 720px) {
+    article .bridging-block { grid-template-columns: 1fr; }
+  }
+
+  article .okay90-block {
+    display: grid;
+    grid-template-columns: 1.5fr 2.6fr 1fr;
+    gap: 1.5rem;
+    margin: 2rem auto;
+    max-width: 1200px;
+    align-items: start;
+  }
+  article .okay90-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+    margin: 0;
+  }
+  article .okay90-text p { margin: 0 0 1rem; 
+  
+  font-family: var(--font-italic-quote);
+    font-style: italic;
+    font-size: 19px;
+    line-height: 1.6;
+    color: var(--color-muted);
+
+    padding-left: 1rem;
+    margin: 0.1rem 0;}
+
+
+  article .okay90-videos {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    align-items: center;
+  }
+  article .okay90-videos iframe {
+    width: 100%;
+    max-width: 190px;
+    aspect-ratio: 16 / 9;
+    height: auto;
+    border: 0;
+    display: block;
+  }
+  article .okay90-videos p { margin: 0; width: 100%; display: flex; justify-content: center; }
+  @media (max-width: 900px) {
+    article .okay90-block { grid-template-columns: 1fr; }
+    article .okay90-videos { flex-direction: row; justify-content: center; }
+  }
+
+  article .seeingyou-block {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 1.5rem;
+    margin: 2rem auto;
+    max-width: 1100px;
+    align-items: start;
+  }
+  article .seeingyou-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+    margin: 0;
+  }
+  article .seeingyou-videos {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  article .seeingyou-videos iframe {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    height: auto;
+    border: 0;
+    display: block;
+  }
+  article .seeingyou-videos p { margin: 0; }
+  @media (max-width: 720px) {
+    article .seeingyou-block { grid-template-columns: 1fr; }
+  }
+
+  article .poem-block {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin: 2rem auto;
+    max-width: 1000px;
+    align-items: start;
+  }
+  article .hg-block {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    margin: 2rem auto;
+    max-width: 1000px;
+    align-items: center;
+  }
+  article .poem-text p,
+  article .hg-text p {
+    margin: 0 0 1rem;
+  }
+  article .poem-image img {
+    max-width: 100%;
+    width: 100%;
+    margin: 0;
+  }
+  article .hg-image img {
+    max-width: 100%;
+    width: 100%;
+    margin: 0 auto;
+  }
+  article .poem-image em {
+    display: block;
+    text-align: center;
+    color: var(--color-muted);
+    font-size: 0.95rem;
+    margin-top: 0.5rem;
+  }
+  @media (max-width: 720px) {
+    article .poem-block,
+    article .hg-block {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  article .video-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin: 2rem auto;
+    max-width: 1000px;
+  }
+  article .video-row iframe {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    height: auto;
+  }
+  article .video-row p { margin: 0; }
+  @media (max-width: 720px) {
+    article .video-row { grid-template-columns: 1fr; }
+  }
+
+  article .only-music {
+    font-family: "Cinzel Decorative", serif;
+    font-style: italic;
+    font-weight: 600;
+    font-size: 31px;
+    color: #d00000;
+    text-align: center;
+    margin: 3rem auto;
+  }
+
+  article .coming-soon {
+    text-align: center;
+    font-family: var(--font-display-cinzel);
+    font-size: 1.2rem;
+    color: var(--color-muted);
+    margin: 4rem 0;
+    font-style: italic;
+    letter-spacing: 0.08em;
+  }
+
+  article hr.navy-rule {
+    border: 0;
+    border-top: 4px double var(--color-navy);
+    margin: 2.5rem auto;
+    max-width: 760px;
+  }
+
+  article .ozanam-block {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: 1.5rem;
+    margin: 2rem auto;
+    max-width: 1000px;
+    align-items: center;
+  }
+  article .ozanam-photo img {
+    max-width: 100%;
+    width: 100%;
+    margin: 0;
+  }
+  article .ozanam-video iframe {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    height: auto;
+  }
+  article .ozanam-credits ul {
+    list-style: disc;
+    padding-left: 1.2rem;
+    margin: 0;
+  }
+  article .ozanam-credits li {
+    font-family: var(--font-display-cinzel);
+    font-size: 16px;
+    line-height: 1.7;
+    color: #2a2a2a;
+  }
+
+  article .transcript-block {
+    max-width: 760px;
+    margin: 2rem auto;
+    padding: 1.5rem 0;
+  }
+  article .transcript-block h4 {
+    text-align: center;
+    color: var(--color-accent);
+    font-family: var(--font-display-cinzel);
+    margin: 0 0 1.5rem;
+    letter-spacing: 0.04em;
+  }
+  article .transcript-block p {
+    font-style: normal;
+    line-height: 1.75;
+    margin: 0 0 1rem;
+  }
+
+  article blockquote.bob-quote {
+    border-left: 3px solid var(--color-navy);
+    padding: 0.5rem 0 0.5rem 1.5rem;
+    margin: 2rem auto;
+    max-width: 760px;
+    color: var(--color-navy);
+    font-weight: 600;
+    font-style: normal;
+  }
+  article blockquote.bob-quote p { margin: 0; }
+
+  /* A spoken line lifted to epigraph scale (heading-sized, but not a heading) */
+  article p.lead-quote {
+    font-family: "Cormorant Infant", "Simonetta", serif;
+    font-style: italic;
+    font-size: 1.5rem;
+    line-height: 1.5;
+    color: var(--color-navy);
+    text-align: center;
+    max-width: 760px;
+    margin: 1.75rem auto 2.25rem;
+  }
+  @media (max-width: 720px) {
+    article p.lead-quote { font-size: 1.25rem; }
+  }
+
+  article .tribute-block {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin: 2rem auto;
+    max-width: 960px;
+    align-items: start;
+  }
+  article .tribute-image img { max-width: 100%; margin: 0; }
+
+  @media (max-width: 720px) {
+    article .ozanam-block,
+    article .tribute-block {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  article p {
+    margin: 0 0 1.2rem;
+  }
+
+  blockquote {
+    font-family: var(--font-italic-quote);
+    font-style: italic;
+    font-size: 20px;
+    line-height: 1.7;
+    color: var(--color-muted);
+    border-left: 3px solid var(--color-rule);
+    padding-left: 1.2rem;
+    margin: 1.5rem 0;
+  }
+
+  /* === About page (WP verbatim typography) === */
+  main.page-about article h1 {
+    font-family: var(--font-display-cinzel);
+    font-weight: 600;
+    font-size: 40px;
+    color: var(--color-accent);
+    text-align: center;
+    margin: 2.5rem 0 1rem;
+  }
+  main.page-about article h6 {
+    font-family: 'Akaya Telivigala', serif;
+    font-weight: 500;
+    text-align: center;
+    color: #020450;
+    font-size: 20px;
+    margin: 0.5rem 0 1.5rem;
+  }
+  main.page-about article h2 {
+    font-family: 'Gabriela', serif;
+    font-weight: 500;
+    font-size: 36px;
+    color: var(--color-accent);
+    text-align: center;
+    margin: 2.5rem 0 1.2rem;
+  }
+  main.page-about article h3 {
+    font-family: 'Gabriela', serif;
+    font-weight: 600;
+    font-size: 25px;
+    color: var(--color-accent);
+    text-align: center;
+    margin: 2rem 0 1rem;
+  }
+  main.page-about article h4 {
+    font-family: 'Gabriela', serif;
+    font-weight: 500;
+    font-size: 16px;
+    color: var(--color-accent);
+    text-align: right;
+    margin: 1.5rem 0;
+  }
+  main.page-about article h4 a { color: var(--color-accent); }
+  main.page-about article p {
+    font-size: 17px;
+    line-height: 1.75;
+    margin: 0 0 1.2rem;
+  }
+  /* Table of Contents — list centered */
+  main.page-about article ul,
+  main.page-about article ol {
+    list-style: none;
+    padding: 0;
+    text-align: center;
+  }
+  main.page-about article ul li,
+  main.page-about article ol li {
+    margin: 0.3rem 0;
+  }
+  /* About page dividers */
+  main.page-about article hr.about-rule-red {
+    border: 0;
+    border-top: 1px solid var(--color-accent);
+    margin: 2rem auto;
+    width: 100%;
+    max-width: 1100px;
+  }
+  main.page-about article hr.about-rule-black {
+    border: 0;
+    border-top: 1px solid #000;
+    margin: 2.5rem auto;
+    width: 100%;
+    max-width: 1100px;
+  }
+  /* Image + caption: center-aligned figure */
+  main.page-about article img {
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  main.page-about article figure {
+    text-align: center;
+    margin: 2rem auto;
+  }
+  /* Poem + image side-by-side (poem left, image right) */
+  main.page-about article .poem-image-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+    align-items: center;
+    margin: 2rem auto;
+    max-width: 1000px;
+  }
+  main.page-about article .poem-image-row .poem-text p {
+    margin: 0 0 0.8rem;
+  }
+  main.page-about article .poem-image-row .poem-image img {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    margin: 0;
+  }
+  @media (max-width: 720px) {
+    main.page-about article .poem-image-row {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  main.page-about article figure figcaption {
+    display: block;
+    text-align: center;
+    font-style: italic;
+    color: var(--color-muted);
+    font-size: 0.95rem;
+    margin-top: 0.5rem;
+  }
+  /* Caption pattern: ![]() immediately followed by a paragraph of text */
+  main.page-about article p:has(> img:only-child) + p {
+    text-align: center;
+    font-size: 0.95rem;
+    color: var(--color-muted);
+    margin-top: -0.5rem;
+  }
+  main.page-brooklyn-bop article p:has(img) em,
+  main.page-leonard-gaskin article p:has(img) em {
+    display: block;
+    text-align: center;
+    font-size: 0.95rem;
+    color: var(--color-muted);
+    margin-top: 0.5rem;
+  }
+
+  /* === ページ目次（共通）。2026-10-01 ===
+     使い方（本文の .md に書く）:
+       <nav class="page-toc" id="contents" aria-label="On this page">
+         <p class="page-toc-head">On this page</p>
+         <ul><li><a href="#xxx">…</a></li></ul>
+       </nav>
+       目次の下の線: <hr class="toc-rule" />（nav の直後）
+       各節の終わり: <p class="toc-back"><a href="#contents">↑ Contents</a></p>
+     そのページだけ変えたい時は、nav に style="--toc-link: #xxx" のように1行足す。
+       変えられる値: --toc-width / --toc-link / --toc-hover / --toc-font / --toc-size / --toc-gap（項目の間）
+       見出し（On this page）: --toc-head（色）/ --toc-head-font / --toc-head-size / --toc-head-weight / --toc-head-gap */
+  .page-toc {
+    max-width: var(--toc-width, 560px);
+    margin: 0 auto 2.5rem;
+    padding: 0 1rem;
+    text-align: center;
+  }
+  .page-toc-head {
+    margin: 1.2rem 0 var(--toc-head-gap, 0.4rem);
+    font-family: var(--toc-head-font, inherit);
+    font-weight: var(--toc-head-weight, inherit);
+    font-size: var(--toc-head-size, 0.85rem);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--toc-head, #888);
+  }
+  .page-toc ul { list-style: none; margin: 0; padding: 0; }
+  .page-toc ol { list-style: none; counter-reset: toc; margin: 0; padding: 0; }
+  .page-toc ol > li { counter-increment: toc; }
+  .page-toc ol > li::before { content: counter(toc) ". "; }
+  .page-toc .toc-note { font-size: 0.9rem; color: #888; margin-left: 0.5rem; }
+  .page-toc li {
+    margin: var(--toc-gap, 0.5rem) 0;
+    line-height: 1.6;
+    font-family: var(--toc-font, inherit);
+    font-size: var(--toc-size, inherit);
+  }
+  .page-toc a { color: var(--toc-link, var(--color-navy)); text-decoration: none; }
+  .page-toc a:hover { color: var(--toc-hover, var(--color-accent)); }
+  .toc-rule { border: none; border-top: 1px solid #c8cfe0; margin: 0 0 2rem; }
+  .toc-back { margin: 1.2rem 0 0; text-align: right; font-size: 0.8rem; }
+  .toc-back a { color: #888; text-decoration: none; }
+  .toc-back a:hover { color: var(--color-accent); text-decoration: underline; }
+
+  /* === The Meiji Restoration pages (mystery/meiji/…): section titles are navy, not red === */
+  main.page-meiji article h3 { color: var(--color-navy); }
+
+  /* === YouTube embed (shared): <div class="video-embed"><iframe src="https://www.youtube.com/embed/ID" …></iframe></div> === */
+  article .video-embed { position: relative; aspect-ratio: 16 / 9; max-width: 720px; margin: 1.8rem auto; }
+  article .video-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+  /* === Booklet (Angels Swing / We Remember You chapters) === */
+  /* Image caption: em on its own line within an image paragraph */
+  main.page-booklet article p:has(> img) em {
+    display: block;
+    text-align: center;
+    font-style: italic;
+    font-size: 0.9rem;
+    color: var(--color-muted);
+    margin-top: 0.4rem;
+  }
+  /* Caption pattern: ![]() immediately followed by a separate caption paragraph */
+  main.page-booklet article p:has(> img:only-child) + p {
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--color-muted);
+    margin-top: -0.5rem;
+  }
+  /* Section headings (h5) and intro lines (h6): browser defaults are tiny.
+     Original WP theme rendered these at readable size (h5 navy bold sections). */
+  main.page-booklet article h5 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--color-navy);
+    margin: 2rem 0 0.75rem;
+  }
+  main.page-booklet article h6 {
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: center;
+    margin: 1.5rem 0 0.75rem;
+  }
+
+  /* === Timeline page (light, simple) === */
+  main.page-timeline article table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.7;
+    color: #333;
+    margin: 2rem 0;
+  }
+  main.page-timeline article table th {
+    background: transparent;
+    color: var(--color-navy);
+    padding: 12px 14px;
+    text-align: left;
+    font-weight: 500;
+    font-size: 17px;
+    border: none;
+    border-bottom: 1px solid #d8d8d8;
+    font-family: var(--font-body);
+  }
+  main.page-timeline article table td {
+    padding: 10px 14px;
+    vertical-align: top;
+    border: none;
+    border-bottom: 1px solid #eee;
+    background: transparent;
+  }
+  main.page-timeline article table tr:hover td {
+    background-color: rgba(0, 0, 0, 0.02);
+  }
+  main.page-timeline article table td:first-child {
+    font-weight: 500;
+    white-space: nowrap;
+    color: var(--color-navy);
+    width: 90px;
+  }
+  main.page-timeline article table td:nth-child(2) {
+    font-weight: 500;
+    color: #333;
+    width: 260px;
+  }
+  main.page-timeline article table td:nth-child(3) {
+    color: #555;
+    font-size: 16px;
+  }
+
+  /* --- Murakami CD album page --- */
+  /* 案A: ページ全体を中央デフォルト(=info の役割)、ライナーノーツ本文だけ左(=contents) */
+
+  /* info: 既定で中央寄せ（タイトル / 曲目 / 演奏者 / クレジット） */
+  main.page-album article {
+    text-align: center;
+  }
+
+  /* カバー画像: 中央・最大幅 400px */
+  main.page-album article p:has(> img:only-child) img,
+  main.page-album article p:has(> a:only-child > img) img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 400px;
+    height: auto;
+  }
+
+  /* 本文写真（contents内の横長写真）: ジャケより広げる
+     ↓ サイズは船長が微調整する欄（WP は 780px 相当） */
+  main.page-album article .murakami-cd-text-contents p:has(> img:only-child) img,
+  main.page-album article .murakami-cd-text-contents p:has(> a:only-child > img) img {
+    max-width: 720px;        /* 本文写真の幅（叩き台） */
+  }
+
+  /* 横長写真を大きく見せるラッパー（本文の外＝クレジット後などでも 720px）
+     使い方: md で写真を <div class="murakami-cd-photo-wide"> で囲む */
+  main.page-album article .murakami-cd-photo-wide p:has(> img:only-child) img,
+  main.page-album article .murakami-cd-photo-wide p:has(> a:only-child > img) img {
+    max-width: 720px;        /* 叩き台 */
+  }
+
+  /* 曲目が markdown 番号リスト(ol/ul)になった場合の中央寄せ */
+  main.page-album article ol,
+  main.page-album article ul {
+    list-style-position: inside;
+    padding-left: 0;
+  }
+
+  /* contents: ライナーノーツ本文だけ左寄せ */
+  main.page-album article .murakami-cd-text-contents {
+    text-align: left;
+  }
+
+  /* アルバムタイトル(h1 が使われる場合) */
+  main.page-album article h1 {
+    font-size: 1.54rem;
+  }
+
+  /* ## 見出し（info内では中央 / contents内では左 ＝ 親から継承）
+     ↓ サイズ・色・フォントは船長が微調整する欄 */
+  main.page-album article h2 {
+    font-size: 1.5rem;        /* サイズ（叩き台） */
+    font-weight: 600;         /* 太さ（叩き台） */
+    color: inherit;           /* 色（調整欄） */
+    font-family: inherit;     /* フォント（調整欄） */
+    margin: 1.75rem 0 0.75rem;
+  }
+
+  /* ### 文中の小見出し
+     ↓ サイズ・色・フォントは船長が微調整する欄 */
+  main.page-album article h3 {
+    font-size: 1.2rem;        /* サイズ（叩き台） */
+    font-weight: 600;         /* 太さ（叩き台） */
+    color: inherit;           /* 色（調整欄） */
+    font-family: inherit;     /* フォント（調整欄） */
+    margin: 1.25rem 0 0.5rem;
+  }
+
+  /* === Thanks for the Memory: tracklist / personnel set like the CD back cover (EN/ES common) === */
+  main.page-memory article iframe {
+    display: block;
+    margin: 2rem auto;
+    max-width: 100%;
+  }
+  /* === Por La Chocolate: top embed centered, same treatment as memory === */
+  main.page-por-la-chocolate article iframe {
+    display: block;
+    margin: 2rem auto;
+    max-width: 100%;
+  }
+  /* Archival photo/video caption — scoped by class, not by "iframe + p",
+     because the opening YouTube embed is also followed by a <p> (the
+     narrative's first line) that must NOT get caption styling. */
+  main.page-memory article .video-caption {
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--color-muted);
+    margin-top: -1rem;
+  }
+  main.page-memory article .video-closing {
+    text-align: center;
+  }
+  /* Musicians + album block: same construction as /swing/dream/ (that page keeps
+     its own scoped copy because it is a standalone .astro page, not markdown). */
+  main.page-memory article .musicians {
+    margin: 2.5rem 0;
+    text-align: center;
+  }
+  main.page-memory article .musicians p {
+    font-family: var(--font-display-cinzel);
+    font-size: 16px;
+    color: var(--color-navy);
+    margin: 0.3rem 0;
+    line-height: 1.5;
+  }
+  /* 締めの2行だけ間を詰める。見出しの直後に来る .musicians を狙う——
+     パーソネルの方は hr の後ろなので、こちらは影響を受けない */
+  main.page-memory article h3 + .musicians {
+    margin-top: 0.5rem;
+  }
+
+  main.page-memory article .album-block {
+    display: flex;
+    gap: 2.5rem;
+    align-items: flex-start;
+    justify-content: center;
+    margin: 2.5rem 0;
+  }
+  main.page-memory article .album-cover img {
+    width: 260px;
+    max-width: 100%;
+    margin: 0;
+    display: block;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+  }
+  main.page-memory article .album-tracklist {
+    flex: 1;
+    max-width: 400px;
+  }
+  main.page-memory article .album-tracklist h3 {
+    font-family: var(--font-display-cinzel);
+    font-weight: 600;
+    font-size: 18px;
+    color: var(--color-accent);
+    margin: 0 0 0.8rem;
+  }
+  main.page-memory article ol.tracklist {
+    list-style: decimal;
+    margin: 0;
+    padding-left: 1.3rem;
+  }
+  main.page-memory article ol.tracklist li {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 15px;
+    color: #2a2a2a;
+    padding: 0.35rem 0;
+    border-bottom: 1px solid #e8e8e8;
+  }
+  main.page-memory article ol.tracklist li:last-child {
+    border-bottom: none;
+  }
+  /* 作詞・作曲はこのページだけの追加。dream 側には無い */
+  main.page-memory article .track-main {
+    display: block;
+    min-width: 0;
+  }
+  main.page-memory article .track-credit {
+    display: block;
+    font-size: 12px;
+    color: #8a8a8a;
+    margin-top: 0.15rem;
+    line-height: 1.4;
+  }
+  main.page-memory article .track-time {
+    color: #888;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (max-width: 640px) {
+    main.page-memory article .album-block {
+      flex-direction: column;
+      align-items: center;
+    }
+    main.page-memory article .album-tracklist {
+      max-width: 100%;
+      width: 100%;
+    }
+  }
+
+  /* === Press page: simple clickable thumbnail gallery (EN/ES common) === */
+  main.page-press article p {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    max-width: 1000px;
+    margin: 2rem auto;
+  }
+  main.page-press article img {
+    width: 100%;
+    height: 200px;
+    max-width: none;
+    object-fit: cover;
+    object-position: top;
+    margin: 0;
+    cursor: zoom-in;
+    border-radius: 2px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+    transition: transform 0.15s ease;
+  }
+  main.page-press article img:hover {
+    transform: scale(1.03);
+  }
+  @media (max-width: 768px) {
+    main.page-press article p {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  /* Lightbox overlay (created by inline script on press pages) */
+  .press-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.85);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: zoom-out;
+    padding: 2rem;
+  }
+  .press-lightbox.open {
+    display: flex;
+  }
+  .press-lightbox img {
+    max-width: 90vw;
+    max-height: 90vh;
+    object-fit: contain;
+    box-shadow: 0 6px 30px rgba(0, 0, 0, 0.5);
+  }
+
+  /* "In the Press" section on project pages (rendered from markdown) */
+  .press-block {
+    margin: 2.5rem 0 1rem;
+  }
+  .press-block .press-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem 1rem;
+  }
+  .press-block figure {
+    margin: 0;
+  }
+  .press-block img {
+    width: 100%;
+    display: block;
+    border: 1px solid #ddd;
+    box-shadow: 0 3px 14px rgba(0, 0, 0, 0.12);
+    cursor: zoom-in;
+    transition: transform 0.2s ease;
+  }
+  .press-block img:hover {
+    transform: scale(1.03);
+  }
+  .press-block figcaption {
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 12px;
+    color: #888;
+    text-align: center;
+    margin-top: 0.5rem;
+    line-height: 1.4;
+  }
+  @media (max-width: 640px) {
+    .press-block .press-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* ページ下部の入口バナー。横長の写真をそのまま次のページへのリンクにする */
+  .next-banner {
+    position: relative;
+    display: block;
+    width: 100%;
+    margin-top: 2rem;
+    overflow: hidden;
+    text-decoration: none;
+    line-height: 0;
+  }
+  .next-banner img {
+    width: 100%;
+    height: 100%;
+    min-height: 320px;
+    display: block;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+  }
+  .next-banner:hover img { transform: scale(1.03); }
+  .next-banner::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.12) 100%);
+  }
+  .next-banner-text {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 1rem;
+    line-height: 1.3;
+  }
+  .next-kicker {
+    font-family: var(--font-display-cinzel);
+    font-size: 14px;
+    letter-spacing: 0.14em;
+    color: #232323;
+    text-transform: uppercase;
+    text-shadow: 0 0 16px rgba(255,255,255,1), 0 0 6px rgba(255,255,255,1), 0 0 2px rgba(255,255,255,0.9);
+    margin-bottom: 0.5rem;
+  }
+  .next-title {
+    font-family: var(--font-display-ysabeau);
+    font-weight: 700;
+    font-size: 44px;
+    color: var(--color-accent);
+    text-shadow: 0 0 18px rgba(255,255,255,0.95), 0 0 6px rgba(255,255,255,0.9);
+  }
+  .next-sub {
+    font-family: var(--font-display-cinzel);
+    font-size: 16px;
+    color: #232323;
+    letter-spacing: 0.04em;
+    text-shadow: 0 0 16px rgba(255,255,255,1), 0 0 6px rgba(255,255,255,1), 0 0 2px rgba(255,255,255,0.9);
+    margin-top: 0.5rem;
+  }
+  @media (max-width: 720px) {
+    .next-banner img { min-height: 260px; }
+    .next-title { font-size: 26px; }
+    .next-kicker { font-size: 12px; }
+    .next-sub { font-size: 13px; }
+  }
+</style>

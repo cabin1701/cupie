@@ -1,0 +1,53 @@
+---
+import Layout from '../layouts/Layout.astro';
+const base = import.meta.env.BASE_URL;
+---
+
+<Layout
+  title="Cupie Danny"
+  description="A 100-yen Cupie doll that looked just like Danny Rojo from behind — ballpoint tattoos, rainbow whiskers, and a tiny traveler from New York to Cuba."
+  ogImage="images/cupie/hero_cupie.jpg"
+>
+  <main class="entrance">
+    <img class="entrance-hero" src={`${base}images/cupie/hero_cupie.jpg`} alt="Cupie Danny" />
+    <h1 class="entrance-title">CUPIE DANNY</h1>
+    <ul class="entrance-langs">
+      <li><a href={`${base}en/`}>English</a></li>
+      <li><a href={`${base}es/`}>Español</a></li>
+    </ul>
+  </main>
+</Layout>
+
+<style>
+  .entrance {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2rem 1rem 4rem;
+    text-align: center;
+  }
+  .entrance-hero {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .entrance-title {
+    font-family: var(--font-display-cinzel-dec);
+    font-weight: 700;
+    margin: 1.5rem 0 1rem;
+  }
+  .entrance-langs {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+  }
+  .entrance-langs a {
+    font-family: var(--font-nav);
+    font-size: 1.4rem;
+    color: var(--color-accent);
+    text-decoration: none;
+  }
+  .entrance-langs a:hover { text-decoration: underline; }
+</style>

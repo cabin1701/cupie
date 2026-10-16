@@ -1,0 +1,394 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import ProjectHero from '../../components/ProjectHero.astro';
+
+const base = import.meta.env.BASE_URL;
+const IMG = (p: string) => `/images/wp/${p}`;
+
+interface GCard {
+  title: string;
+  image: string;
+  href: string;
+}
+
+const gallery: GCard[] = [
+  {
+    title: 'Músicos y Celebridades',
+    image: IMG('2018/04/QPD160.jpg'),
+    href: `${base}es/gallery-01/`,
+  },
+  {
+    title: 'Amigos y Familia',
+    image: IMG('2018/04/QPD074.jpg'),
+    href: `${base}es/gallery-02/`,
+  },
+  {
+    title: 'Viajes y Aventuras',
+    image: IMG('2026/06/bath-1-1-1024x1024.jpg'),
+    href: `${base}es/gallery-03/`,
+  },
+];
+
+const trail = [
+  { slug: 'cupie', title: 'CUPIE DANNY', path: `${base}es/` },
+];
+---
+
+<Layout title="Cupie Danny — Japonéson" description="Una muñeca Cupie de tienda de cien yenes idéntica a Danny Rojo de espaldas: tatuajes de bolígrafo, bigotes de arcoíris y un viajero diminuto." lang="es" ogImage="images/cupie/hero_cupie.jpg">
+  <Header lang="es" />
+  <main>
+    <ProjectHero
+      title="I Love Cupie Danny"
+      subtitle="Danny Rojo & Seina"
+      titleFont="'Fredoka', sans-serif"
+      titleWeight={600}
+      titleSize="70px"
+      titleColor="var(--color-accent)"
+      image={`${base}images/cupie/hero_cupie.jpg`}
+      align="center"
+      height={860}
+      fit="cover"
+    />
+
+    <div class="container breadcrumb-wrap">
+      <Breadcrumb trail={trail} lang="es" />
+    </div>
+
+    <section class="intro">
+      <div class="intro-inner">
+        <h2 class="big-h">¡Todos aman a Cupie Danny!!</h2>
+
+        <p class="lead">
+          ¡Todo comenzó con una muñeca Cupie de una tienda de 100 yenes que se parecía exactamente a Danny Rojo de espaldas! Impulsado por una imaginación cruda y desatada, tatuajes de bolígrafo y bigotes de colores del arcoíris, nació "Cupie Danny" — un diminuto aventurero desnudo listo para conquistar corazones desde Nueva York hasta Cuba.
+        </p>
+
+        <div class="trio">
+          <figure><img src={IMG('2026/05/IMG_6001-600x800.jpg')} alt="" loading="lazy" /></figure>
+          <div class="trio-video">
+            <iframe
+              src="https://www.youtube.com/embed/yPEICcvPreQ"
+              title="Cupie Danny"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen
+            ></iframe>
+          </div>
+          <figure><img src={IMG('2026/05/IMG_7346-600x800.jpg')} alt="" loading="lazy" /></figure>
+        </div>
+      </div>
+    </section>
+
+    <hr class="cupie-divider" />
+
+    <section class="gallery-block">
+      <h2 class="big-h">Galería</h2>
+      <div class="gallery-grid">
+        {gallery.map((c) => (
+          <a class="gallery-card" href={c.href}>
+            <div class="gallery-image"><img src={c.image} alt={c.title} loading="lazy" /></div>
+            <h3 class="gallery-title">{c.title}</h3>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <hr class="cupie-divider" />
+
+    <section class="intro">
+      <div class="intro-inner">
+        <p>
+          En noviembre de 2013, mientras me alojaba en East Harlem (Spanish Harlem), Nueva York, conocí a Danny Rojo tocando en un restaurante cerca de donde me hospedaba.
+        </p>
+        <p>
+          Muchos tatuajes, cabeza rapada, barba tornasolada. Pero cuando escuché su voz al cantar, me gustó. Al ver sus redes sociales, pensé que era con fines promocionales, hay fotos desnudo.
+        </p>
+        <p>
+          Un día, encontré una muñeca Cupie que se parecía a Danny Rojo de espaldas en una tienda de 100 yenes (tienda de 1 dólar). Por supuesto, es una muñeca Cupie, así que está desnudo.
+        </p>
+
+        <figure class="wdanny-photo">
+          <img src={IMG('2019/06/wdanny.jpg')} alt="Danny Rojo de espaldas" loading="lazy" />
+        </figure>
+
+        <p>
+          Dibujé un tatuaje con impulso, añadí un bigote de colores del arcoíris, y dibujé cejas gruesas con bolígrafo. Cuando le envié la foto a Danny, que vive en Nueva York, pareció gustarle mucho.
+        </p>
+        <p>
+          Lo llamé "Cupie Danny" porque pensé que sería más fácil de recordar si se parecía a "Cutie Honey" del manga japonés que la mayoría de los japoneses conocen.
+        </p>
+        <p>
+          Dos meses después, fui a Nueva York con muchos Cupie Danny y materiales para hacer Cupie Danny. Después de eso, fui a México, Guatemala, Cuba y Miami.
+        </p>
+
+        <figure class="wide-photo">
+          <img src={IMG('2019/06/allQPD.jpg')} alt="All Cupie Danny" loading="lazy" />
+        </figure>
+      </div>
+    </section>
+
+    <hr class="cupie-divider" />
+
+    <section class="tribute-block">
+      <h2 class="big-h" id="formell">Homenaje a Juan-Carlos Formell</h2>
+      <div class="tribute-inner">
+        <figure class="uchiwa-small">
+          <img src={IMG('2026/05/uchiwa09.jpeg')} alt="Uchiwa para Juan-Carlos Formell" loading="lazy" />
+        </figure>
+        <p>
+          27 de mayo de 2023 (en NY, 26 de mayo). Mi feed de Facebook se inundó de publicaciones sobre la muerte de Juan-Carlos Formell, quien se desplomó de repente en un escenario en Nueva York. No lo conozco en persona, pero muchos de mis amigos son amigos suyos. Al día siguiente, me informaron que mi amiga de toda la vida, Yoshiko, había fallecido. Su muerte repentina me hizo comprender que quizás "estar viva" no sea, después de todo, algo "normal". Hice un abanico para conmemorarlo.
+        </p>
+        <p class="fan-line">
+          Por favor, levanten juntos los "fuegos artificiales de abanico" que se pueden ver desde el cielo.
+        </p>
+        <figure class="uchiwa-big">
+          <img src={IMG('2026/05/IMG_3907-600x479.jpeg')} alt="Abanico de homenaje" loading="lazy" />
+        </figure>
+      </div>
+    </section>
+
+    <hr class="cupie-divider" />
+
+    <section class="theater-block">
+      <a class="theater-link" href={`${base}es/theater/`}>
+        <h2 class="theater-h">*Cupie❤︎Danny Theater*</h2>
+      </a>
+      <figure class="theater-photo">
+        <img src={IMG('2026/06/en0922a-e1677590034846.jpg')} alt="Cupie Danny Theater" loading="lazy" />
+      </figure>
+      <p class="theater-post">
+        <a href="https://en.japoneson.com/mom-who-is-he/">001 – "Mom!! Who is he?"</a>
+      </p>
+      <p class="theater-meta">Seina — 22/09/2022</p>
+    </section>
+  </main>
+  <Footer lang="es" />
+</Layout>
+
+<style>
+  .breadcrumb-wrap { padding-top: 1rem; padding-bottom: 0; }
+
+  .intro {
+    background: var(--color-bg);
+    padding: 3rem 1.5rem 2rem;
+  }
+  .intro-inner {
+    max-width: 1080px;
+    margin: 0 auto;
+  }
+  .intro-inner p {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 18px;
+    color: #1f1f1f;
+    line-height: 1.75;
+    margin: 0 0 1.3rem;
+  }
+  .intro-inner p.lead {
+    font-size: 18px;
+    text-align: center;
+    max-width: 820px;
+    margin: 0 auto 2.5rem;
+  }
+
+  .big-h {
+    font-family: 'Cherry Swash', cursive;
+    font-weight: 700;
+    font-size: 36px;
+    color: var(--color-accent);
+    text-align: center;
+    margin: 2rem 0 1.5rem;
+  }
+
+  .trio {
+    display: grid;
+    grid-template-columns: 265fr 550fr 265fr;
+    gap: 0;
+    align-items: center;
+    margin: 2rem auto;
+    max-width: 1080px;
+  }
+  .trio figure {
+    margin: 0;
+    aspect-ratio: 265 / 353;
+    overflow: hidden;
+    border-radius: 2px;
+  }
+  .trio img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .trio-video {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #000;
+  }
+  .trio-video iframe {
+    width: 100%;
+    height: 100%;
+    display: block;
+    border: 0;
+  }
+
+  .gallery-block {
+    background: var(--color-bg);
+    padding: 2rem 1.5rem 3rem;
+    max-width: 1080px;
+    margin: 0 auto;
+  }
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+  .gallery-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    text-align: center;
+    transition: transform 0.25s ease;
+  }
+  .gallery-card:hover { transform: translateY(-2px); }
+  .gallery-image {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    border-radius: 2px;
+  }
+  .gallery-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .gallery-title {
+    font-family: 'Cherry Swash', cursive;
+    font-weight: 700;
+    font-size: 22px;
+    color: var(--color-navy);
+    margin: 1rem 0 0;
+  }
+
+  .wide-photo {
+    margin: 2.5rem auto;
+    max-width: 480px;
+  }
+  .wide-photo img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 2px;
+  }
+  .wdanny-photo {
+    max-width: 480px;
+    margin: 2rem auto;
+  }
+  .wdanny-photo img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 2px;
+  }
+
+  .tribute-block {
+    background: var(--color-bg);
+    padding: 3rem 1.5rem;
+    max-width: 1080px;
+    margin: 0 auto;
+  }
+  .tribute-inner {
+    max-width: 820px;
+    margin: 0 auto;
+  }
+  .tribute-inner p {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 17px;
+    line-height: 1.75;
+    color: #2a2a2a;
+    margin: 0 0 1.3rem;
+  }
+  .uchiwa-small {
+    max-width: 800px;
+    margin: 0 auto 1.5rem;
+  }
+  .uchiwa-small img,
+  .uchiwa-big img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .uchiwa-big {
+    margin: 2rem auto;
+    max-width: 480px;
+  }
+  .fan-line {
+    text-align: center;
+    font-style: italic;
+    color: var(--color-navy);
+    font-size: 18px !important;
+  }
+
+  /* navy divider band — WP Elementor pattern */
+  hr.cupie-divider {
+    border: 0;
+    height: 6px;
+    background: var(--color-navy);
+    margin: 2.5rem auto;
+    max-width: 1080px;
+    width: calc(100% - 3rem);
+  }
+
+  .theater-block {
+    background: var(--color-bg);
+    padding: 3rem 1.5rem 4rem;
+    max-width: 1080px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .theater-link {
+    text-decoration: none;
+    color: inherit;
+  }
+  .theater-h {
+    font-family: 'Cherry Swash', cursive;
+    font-weight: 600;
+    font-size: 40px;
+    color: var(--color-accent);
+    margin: 1rem 0 1.5rem;
+  }
+  .theater-photo {
+    max-width: 360px;
+    margin: 1.5rem auto;
+  }
+  .theater-photo img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 2px;
+  }
+  .theater-post {
+    margin: 1rem 0 0.3rem !important;
+    font-family: 'Fredoka', sans-serif;
+  }
+  .theater-post a {
+    color: var(--color-accent);
+    text-decoration: none;
+    font-size: 19px;
+    font-weight: 600;
+  }
+  .theater-post a:hover { color: var(--color-navy); }
+  .theater-meta {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 14px;
+    color: #888;
+    margin: 0 !important;
+  }
+
+  @media (max-width: 800px) {
+    .trio { grid-template-columns: 1fr; }
+    .gallery-grid { grid-template-columns: 1fr; }
+  }
+</style>

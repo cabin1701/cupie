@@ -1,0 +1,324 @@
+---
+// Hero for project hub pages (smaller than main Hero)
+interface Props {
+  kicker?: string;
+  title: string;
+  subtitle?: string;
+  image?: string;
+  align?: 'left' | 'center';
+  height?: number; // px
+  fit?: 'cover' | 'contain'; // 'cover' = crop to fill, 'contain' = show full image
+  titleFont?: string; // CSS font-family value, e.g. '"Cinzel", serif'
+  titleWeight?: number | string; // CSS font-weight
+  titleItalic?: boolean;
+  titleSize?: string; // CSS font-size override
+  titleColor?: string; // CSS color override
+  videoId?: string; // YouTube video ID for muted background video
+  videoSound?: number; // volume 0-100; when set, unmute on first interaction + show sound toggle
+  videoStart?: number; // start time in seconds
+  overlayTop?: number; // overlay opacity at top (0..1)
+  overlayBottom?: number; // overlay opacity at bottom (0..1)
+  slideshow?: string[]; // background slideshow images (cross-fade)
+  slideshowDuration?: number; // ms per slide (default 5000)
+  // 2026-07-31 追加。
+  // HERO は CSS の背景画像で敷いているため、写真に alt を付ける場所が無い。
+  // 「誰がいつどこで撮ったか」が機械にもスクリーンリーダーにも渡らない。
+  // imageAlt が渡された時だけ、同じ画像を <img> として敷き直す（見た目は同じ）。
+  // 渡さなければ従来どおり背景画像のまま。既存ページを壊さないための切り替え。
+  imageAlt?: string;
+  // 2026-07-31 追加。文字の影。既定は黒（従来どおり）。
+  // 'light' にすると白い光になる。明るい写真に濃い影を落とすと重く見えるため。
+  glow?: 'dark' | 'light';
+  // 2026-08-21 追加。HERO のタイトルを出さない。
+  // HERO は h1 を持っているので、隠すと本文側で h1 を立て直す必要がある
+  // （[...slug].astro は HERO がある時、自分の h1 を出さないため）。
+  // 本文の見出しを # にして h1 にする運用とセットで使う。
+  titleHidden?: boolean;
+}
+const {
+  kicker,
+  title,
+  subtitle,
+  image,
+  imageAlt,
+  glow = 'dark',
+  titleHidden = false,
+  align = 'left',
+  height = 560,
+  fit = 'cover',
+  titleFont,
+  titleWeight,
+  titleItalic,
+  titleSize,
+  titleColor,
+  videoId,
+  videoSound,
+  videoStart,
+  overlayTop = 0,
+  overlayBottom = 0,
+  slideshow,
+  slideshowDuration = 5000,
+} = Astro.props;
+
+const hasSlideshow = Array.isArray(slideshow) && slideshow.length > 0;
+
+const videoSrc = videoId
+  ? `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&modestbranding=1&playsinline=1&rel=0${videoStart ? `&start=${videoStart}` : ''}${videoSound ? '&enablejsapi=1' : ''}`
+  : '';
+
+const titleStyle = [
+  titleFont ? `font-family: ${titleFont};` : '',
+  titleWeight ? `font-weight: ${titleWeight};` : '',
+  titleItalic ? 'font-style: italic;' : '',
+  titleSize ? `font-size: ${titleSize};` : '',
+  titleColor ? `color: ${titleColor};` : '',
+].join(' ');
+---
+
+<section class="p-hero" data-align={align} data-fit={fit} data-glow={glow} style={`${image && !imageAlt ? `background-image: url('${image}');` : ''} min-height: ${height}px;`}>
+  {image && imageAlt && <img class="p-hero-photo" src={image} alt={imageAlt} />}
+  {hasSlideshow && (
+    <div class="slideshow-bg" data-duration={slideshowDuration} aria-hidden="true">
+      {slideshow!.map((src, i) => (
+        <div class="slide" style={`background-image: url('${src}'); opacity: ${i === 0 ? 1 : 0};`}></div>
+      ))}
+    </div>
+  )}
+  {videoId && (
+    <div class="video-bg" aria-hidden="true">
+      <iframe
+        id="hero-video-frame"
+        src={videoSrc}
+        title=""
+        frameborder="0"
+        allow="autoplay; encrypted-media"
+        allowfullscreen
+      ></iframe>
+    </div>
+  )}
+  {videoId && videoSound && (
+    <button class="hero-sound-toggle" type="button" aria-label="Sound on/off" aria-pressed="false" data-volume={String(videoSound)}>
+      <svg class="icon-on" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+        <path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/>
+        <path d="M16.5 8.5a5 5 0 010 7M19 6a8.5 8.5 0 010 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+      <svg class="icon-off" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+        <path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/>
+        <path d="M17 9.5l4 5M21 9.5l-4 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+    </button>
+  )}
+  <div class="overlay" style={`background: linear-gradient(180deg, rgba(0,0,0,${overlayTop}) 0%, rgba(0,0,0,${overlayBottom}) 100%);`}></div>
+  <div class="p-hero-content">
+    {kicker && <p class="kicker">{kicker}</p>}
+    {!titleHidden && <h1 class="p-hero-title" style={titleStyle}>{title}</h1>}
+    {subtitle && <p class="subtitle">{subtitle}</p>}
+  </div>
+</section>
+
+<style>
+  .p-hero {
+    width: 100%;
+    background-size: cover;
+    background-position: center;
+    background-color: #000;
+    background-repeat: no-repeat;
+    position: relative;
+    color: #fff;
+    display: flex;
+    align-items: center;
+  }
+  .p-hero[data-fit="contain"] {
+    background-size: contain;
+  }
+  .p-hero-photo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+  .p-hero[data-fit="contain"] .p-hero-photo {
+    object-fit: contain;
+  }
+  .video-bg {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .slideshow-bg {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .slideshow-bg .slide {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: opacity 500ms ease-in-out;
+  }
+  .video-bg iframe {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 177.78vh;
+    min-width: 100%;
+    height: 56.25vw;
+    min-height: 100%;
+    transform: translate(-50%, -50%);
+    border: 0;
+  }
+  .hero-sound-toggle {
+    position: absolute;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 3;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.35);
+    color: #ffffff;
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.2s ease;
+  }
+  .hero-sound-toggle:hover {
+    background: rgba(0, 0, 0, 0.55);
+  }
+  .hero-sound-toggle .icon-on {
+    display: none;
+  }
+  .hero-sound-toggle[aria-pressed='true'] .icon-on {
+    display: block;
+  }
+  .hero-sound-toggle[aria-pressed='true'] .icon-off {
+    display: none;
+  }
+  .overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.35) 100%);
+  }
+  .p-hero-content {
+    position: relative;
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 4rem 1.5rem;
+    width: 100%;
+  }
+  .p-hero[data-align="center"] .p-hero-content { text-align: center; }
+
+  .kicker {
+    font-family: var(--font-display-cinzel);
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    color: var(--color-bg);
+    text-transform: uppercase;
+    margin: 0 0 1rem;
+    text-shadow: 0 1px 6px rgba(2, 2, 2, 0.8);
+  }
+  .p-hero-title {
+    font-family: var(--font-display-ysabeau);
+    font-weight: 700;
+    font-size: 64px;
+    color: var(--color-accent);
+    margin: 0 0 1.2rem;
+    line-height: 1.05;
+    letter-spacing: 0.01em;
+    text-shadow: 0 2px 10px rgba(2, 2, 2, 0.78);
+  }
+  .subtitle {
+    font-family: var(--font-display-cinzel);
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--color-bg);
+    letter-spacing: 0.05em;
+    margin: 0;
+    max-width: 720px;
+    text-shadow: 0 1px 6px rgba(2, 2, 2, 0.8);
+    white-space: pre-line;
+  }
+  .p-hero[data-align="center"] .subtitle { margin: 0 auto; }
+
+  /* 明るい写真の上では、黒い影より白い光の方が軽い */
+  .p-hero[data-glow="light"] .p-hero-title {
+    text-shadow: 0 0 18px rgba(255, 255, 255, 0.95), 0 0 6px rgba(255, 255, 255, 0.9);
+  }
+  .p-hero[data-glow="light"] .kicker,
+  .p-hero[data-glow="light"] .subtitle {
+    color: #232323;
+    text-shadow: 0 0 16px rgba(255,255,255,1), 0 0 6px rgba(255,255,255,1), 0 0 2px rgba(255,255,255,0.9);
+  }
+
+  @media (max-width: 720px) {
+    .p-hero { min-height: 420px !important; }
+    .p-hero-title { font-size: 42px; }
+    .kicker { font-size: 15px; }
+    .subtitle { font-size: 17px; }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('.slideshow-bg').forEach((box) => {
+    const slides = box.querySelectorAll<HTMLElement>('.slide');
+    if (slides.length < 2) return;
+    const dur = Number(box.dataset.duration) || 5000;
+    let i = 0;
+    setInterval(() => {
+      slides[i].style.opacity = '0';
+      i = (i + 1) % slides.length;
+      slides[i].style.opacity = '1';
+    }, dur);
+  });
+
+  // HERO動画の音：ミュートで自動再生 → 訪問者の最初の操作で小さく鳴らす。
+  // （ブラウザは音ありの自動再生をブロックするため、操作が要る）
+  // 右下のボタンでいつでも消せる／戻せる。hero_video_sound を書いたページだけ有効。
+  (() => {
+    const btn = document.querySelector<HTMLButtonElement>('.hero-sound-toggle');
+    const frame = document.getElementById('hero-video-frame') as HTMLIFrameElement | null;
+    if (!btn || !frame) return;
+    const volume = Number(btn.dataset.volume) || 15;
+    let on = false;
+
+    const send = (func: string, args: unknown[] = []) => {
+      frame.contentWindow?.postMessage(
+        JSON.stringify({ event: 'command', func, args }),
+        'https://www.youtube.com'
+      );
+    };
+
+    const setSound = (state: boolean) => {
+      on = state;
+      if (on) {
+        send('unMute');
+        send('setVolume', [volume]);
+      } else {
+        send('mute');
+      }
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    };
+
+    const events = ['pointerdown', 'keydown', 'touchstart', 'scroll'];
+    const firstTouch = () => {
+      setSound(true);
+      events.forEach((ev) => window.removeEventListener(ev, firstTouch));
+    };
+    events.forEach((ev) => window.addEventListener(ev, firstTouch, { passive: true }));
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setSound(!on);
+    });
+  })();
+</script>

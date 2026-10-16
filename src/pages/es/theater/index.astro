@@ -1,0 +1,146 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Header from '../../../components/Header.astro';
+import Footer from '../../../components/Footer.astro';
+import Breadcrumb from '../../../components/Breadcrumb.astro';
+import ProjectHero from '../../../components/ProjectHero.astro';
+
+const base = import.meta.env.BASE_URL;
+
+const trail = [
+  { slug: 'cupie', title: 'CUPIE DANNY', path: `${base}es/` },
+  { slug: 'theater', title: 'TEATRO', path: `${base}es/theater/` },
+];
+
+const characters = [
+  {
+    name: 'Cupie Danny',
+    image: `https://media.cabin1701.com/japoneson/cupie/theater-cupie.jpg`,
+    desc: 'Se cree el hermano mayor más confiable de todos. Últimamente, su corazón le pertenece por completo a Erika-chan. Permanentemente desnudo, ¡porque un verdadero espíritu libre nunca siente frío!',
+  },
+  {
+    name: 'Shoko-chan',
+    image: `https://media.cabin1701.com/japoneson/cupie/theater-shoko.jpg`,
+    desc: 'La adorable Hermanita que adora absolutamente a su hermano mayor. Que su ternura no te engañe — ¡es la más sensata y confiable!',
+  },
+  {
+    name: 'Erika-chan',
+    image: `https://media.cabin1701.com/japoneson/cupie/theater-erika1.jpg`,
+    desc: 'Una chica con alma, aficionada al yoga, la filosofía india, recorrer templos y la lectura. Pasó su infancia en Brasil. Es un poco delicada de salud, pero profundamente resiliente.',
+  },
+  {
+    name: 'Erika-chan',
+    image: `https://media.cabin1701.com/japoneson/cupie/theater-erika2.jpg`,
+    desc: '¿Estudiar? ¡No, gracias! Una chica cool y traviesa que lleva a los chicos de la nariz mientras es la aliada más confiable para las chicas.',
+  },
+];
+---
+
+<Layout title="Teatro — Cupie Danny — Japonéson" description="Un pequeño teatro con dos personajes: Cupie Danny, el hermano mayor fiable que va siempre desnudo, y Shoko-chan, su hermanita." lang="es" ogImage="images/cupie/hero_theater.jpg">
+  <Header lang="es" />
+  <main>
+    <ProjectHero
+      title="Teatro"
+      subtitle="I ❤︎ Cupie Danny"
+      titleFont="'Fredoka', sans-serif"
+      titleWeight={500}
+      titleSize="80px"
+      titleColor="#facd07"
+      image={`${base}images/cupie/hero_theater.jpg`}
+      align="center"
+      height={760}
+      fit="cover"
+    />
+
+    <div class="container breadcrumb-wrap">
+      <Breadcrumb trail={trail} lang="es" />
+    </div>
+
+    <section class="container theater-section">
+      <hr class="theater-divider" />
+
+      <h2 class="theater-h">Personajes</h2>
+
+      <div class="character-grid">
+        {characters.map((c) => (
+          <figure class="character-card">
+            <img src={c.image} alt={c.name} loading="lazy" />
+            <figcaption>
+              <h3 class="character-name">{c.name}</h3>
+              <p class="character-desc">{c.desc}</p>
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+
+      <hr class="theater-divider" />
+
+      <h2 class="theater-h">* Episodio *</h2>
+
+      <p class="theater-note">Próximamente.</p>
+    </section>
+  </main>
+  <Footer lang="es" />
+</Layout>
+
+<style>
+  .theater-section {
+    padding: 3rem 1.5rem 5rem;
+  }
+  .theater-h {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 48px;
+    text-align: center;
+    color: var(--color-navy);
+    margin: 2.5rem 0 2rem;
+  }
+  .theater-divider {
+    border: none;
+    border-top: 2px dashed var(--color-accent);
+    margin: 2rem auto;
+    max-width: 800px;
+    opacity: 0.7;
+  }
+  .character-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2.5rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .character-card {
+    margin: 0;
+    text-align: center;
+  }
+  .character-card img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 12px;
+  }
+  .character-name {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 500;
+    font-size: 26px;
+    color: var(--color-navy);
+    margin: 1rem 0 0.5rem;
+  }
+  .character-desc {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--color-text);
+    max-width: 360px;
+    margin: 0 auto;
+  }
+  .theater-note {
+    text-align: center;
+    color: var(--color-muted);
+    font-style: italic;
+  }
+  @media (max-width: 640px) {
+    .character-grid { grid-template-columns: 1fr; }
+  }
+</style>
+
+<!-- 2026-06-27 — Eddie — Theater hub scaffold（WP verbatim: hero Fredoka 500 80px, overlay 0, 4 character cards, Episode 部分は post 1 件のみのため Coming soon） -->

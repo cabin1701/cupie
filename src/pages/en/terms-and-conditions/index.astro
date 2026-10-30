@@ -1,0 +1,59 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Header from '../../../components/Header.astro';
+import Footer from '../../../components/Footer.astro';
+// japoneson の同じページを元に、cupiedanny.com 用に置いた（2026-10-30）
+---
+
+<Layout title="Terms and Conditions — Cupie Danny" lang="en">
+  <Header lang="en" />
+  <main class="legal">
+    <h1>Terms and Conditions</h1>
+    <div class="legal-body">
+      <p><strong>Last Updated: October 2026</strong></p>
+      <p>Please read these terms and conditions carefully before using our service.</p>
+      <p>These terms apply to cupiedanny.com.</p>
+      <hr />
+      <h2>01. ACKNOWLEDGEMENT</h2>
+      <p>By accessing or using this space, you agree to be bound by these Terms and Conditions. These terms apply to all visitors, users, and others who access the service.</p>
+      <h2>02. INTERPRETATION &amp; DEFINITIONS</h2>
+      <p>The words in this document follow specific meanings defined under these conditions, regardless of whether they appear in singular or plural form.</p>
+      <h2>03. THIRD-PARTY LINKS</h2>
+      <p>This service may contain links to external websites that are not operated by us. We have no control over, and assume no responsibility for, the content or privacy policies of any third-party sites.</p>
+      <h2>04. TERMINATION</h2>
+      <p>Access to the service may be terminated immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach these Terms and Conditions.</p>
+      <h2>05. LIMITATION OF LIABILITY</h2>
+      <p>To the maximum extent permitted by applicable law, in no event shall we be liable for any special, incidental, or consequential damages arising out of or in connection with your use of the service.</p>
+      <h2>06. GOVERNING LAW</h2>
+      <p>The laws of Japan shall govern these Terms and your use of the service. Your use of the space may also be subject to other local or international laws.</p>
+      <h2>07. CHANGES TO THESE TERMS</h2>
+      <p>We reserve the right to modify or replace these Terms at any time. By continuing to access our service after those revisions become effective, you agree to be bound by the revised terms.</p>
+      <h2>08. CONTACT</h2>
+      <p>If you have any questions about these Terms and Conditions, please contact us:</p>
+      <p><strong>Contact form:</strong> <a href="https://cupiedanny.com/contact/">https://cupiedanny.com/contact/</a></p>
+    </div>
+  </main>
+  <Footer lang="en" />
+</Layout>
+
+<style>
+  .legal {
+    max-width: 760px;
+    margin: 3rem auto 4rem;
+    padding: 0 1.5rem;
+  }
+  .legal h1 {
+    font-family: var(--font-section);
+    color: var(--color-accent);
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .legal-body h2 {
+    font-family: var(--font-nav);
+    font-size: 1.3rem;
+    color: var(--color-navy);
+    margin: 2rem 0 0.6rem;
+  }
+  .legal-body p, .legal-body li { line-height: 1.7; }
+  .legal-body hr { border: 0; border-top: 1px solid var(--color-rule); margin: 2rem 0; }
+</style>

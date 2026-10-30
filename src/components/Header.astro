@@ -39,7 +39,7 @@ function label(item: NavItem): string {
   <div class="header-inner">
     <div class="logo-row">
       <a class="logo" href={prefix}>
-        <span class="logo-main">CUPIE DANNY</span>
+        <span class="logo-main">Cupie Danny</span>
         <span class="logo-sub">Shoko "Seina" Shiraishi</span>
       </a>
       <a class="lang-link" href={`${base}${otherLang}/`}>{otherLangLabel}</a>
@@ -105,8 +105,9 @@ function label(item: NavItem): string {
     text-decoration: none;
   }
   .logo-main {
-    font-weight: 500;
-    font-size: 26px;
+    font-family: 'Fredoka', sans-serif; /* ロゴだけ丸い字。HERO の Cupie Danny とそろえる（2026-10-30、船長） */
+    font-weight: 600;
+    font-size: 32px;
     color: var(--color-accent);
     letter-spacing: 0.01em;
   }
@@ -117,7 +118,7 @@ function label(item: NavItem): string {
     letter-spacing: 0.01em;
   }
   .lang-link {
-    font-family: var(--font-display-serif);
+    font-family: var(--font-section); /* Asap Condensed（2026-10-30、船長） */
     font-style: normal;
     font-weight: 500;
     font-size: 18px;
@@ -217,7 +218,7 @@ function label(item: NavItem): string {
 
   /* Mobile fallback: tap → show */
   @media (max-width: 720px) {
-    .logo-main { font-size: 1.5rem; }
+    .logo-main { font-size: 1.8rem; }
     .lang-link { font-size: 1.05rem; }
     .primary-nav .nav-root { justify-content: center; gap: 1rem; }
     .primary-nav .nav-root > li > a { font-size: 0.95rem; }

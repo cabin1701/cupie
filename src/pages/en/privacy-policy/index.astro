@@ -1,0 +1,67 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Header from '../../../components/Header.astro';
+import Footer from '../../../components/Footer.astro';
+// japoneson の同じページを元に、cupiedanny.com 用に置いた（2026-10-30）
+---
+
+<Layout title="Privacy Policy — Cupie Danny" lang="en">
+  <Header lang="en" />
+  <main class="legal">
+    <h1>Privacy Policy</h1>
+    <div class="legal-body">
+      <p><strong>Last Updated: October 2026</strong></p>
+      <p>Your privacy is a priority in our digital manifest. This policy outlines how your information is handled across this space.</p>
+      <p>This policy applies to cupiedanny.com.</p>
+      <hr />
+      <h2>01. INFORMATION COLLECTION</h2>
+      <p>Only personal information that you voluntarily provide (such as via contact forms) is collected. This may include:</p>
+      <ul>
+      <li>Name or Username</li>
+      <li>Email Address</li>
+      <li>Communication preferences</li>
+      </ul>
+      <h2>02. LOG DATA &amp; ANALYTICS</h2>
+      <p>Standard log data that your browser sends is recorded automatically. This includes:</p>
+      <ul>
+      <li>IP Address</li>
+      <li>Browser type and version</li>
+      <li>Pages visited and time spent</li>
+      </ul>
+      <h2>03. COOKIES</h2>
+      <p>Cookies are used solely to ensure the website functions correctly. You can instruct your browser to refuse them, though some sectors of the service may become inaccessible.</p>
+      <h2>04. SECURITY PROTOCOLS</h2>
+      <p>Commercially acceptable means are used to protect your information. However, no method of transmission over the internet is 100% secure.</p>
+      <h2>05. THIRD-PARTY LINKS</h2>
+      <p>This space may contain links to external sites. There is no control over, and no responsibility assumed for, the content or privacy practices of third-party platforms.</p>
+      <h2>06. CHILDREN'S PRIVACY</h2>
+      <p>This platform does not address anyone under the age of 13, and personal data from children is not knowingly collected.</p>
+      <h2>07. CONTACT</h2>
+      <p>For any questions regarding this manifest, you can reach out directly:</p>
+      <p><strong>Contact form:</strong> <a href="https://cupiedanny.com/contact/">https://cupiedanny.com/contact/</a></p>
+    </div>
+  </main>
+  <Footer lang="en" />
+</Layout>
+
+<style>
+  .legal {
+    max-width: 760px;
+    margin: 3rem auto 4rem;
+    padding: 0 1.5rem;
+  }
+  .legal h1 {
+    font-family: var(--font-section);
+    color: var(--color-accent);
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .legal-body h2 {
+    font-family: var(--font-nav);
+    font-size: 1.3rem;
+    color: var(--color-navy);
+    margin: 2rem 0 0.6rem;
+  }
+  .legal-body p, .legal-body li { line-height: 1.7; }
+  .legal-body hr { border: 0; border-top: 1px solid var(--color-rule); margin: 2rem 0; }
+</style>

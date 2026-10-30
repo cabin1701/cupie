@@ -1,0 +1,67 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Header from '../../../components/Header.astro';
+import Footer from '../../../components/Footer.astro';
+// japoneson の同じページを元に、cupiedanny.com 用に置いた（2026-10-30）
+---
+
+<Layout title="Política de Privacidad — Cupie Danny" lang="es">
+  <Header lang="es" />
+  <main class="legal">
+    <h1>Política de Privacidad</h1>
+    <div class="legal-body">
+      <p><strong>Última actualización: octubre de 2026</strong></p>
+      <p>Tu privacidad es una prioridad en nuestro manifiesto digital. Esta política describe cómo se maneja tu información dentro de este espacio.</p>
+      <p>Esta política se aplica a cupiedanny.com.</p>
+      <hr />
+      <h2>01. RECOPILACIÓN DE INFORMACIÓN</h2>
+      <p>Solo se recopila la información personal que proporcionas voluntariamente (por ejemplo, a través de formularios de contacto). Esto puede incluir:</p>
+      <ul>
+      <li>Nombre o nombre de usuario</li>
+      <li>Dirección de correo electrónico</li>
+      <li>Preferencias de comunicación</li>
+      </ul>
+      <h2>02. DATOS DE REGISTRO Y ANALÍTICA</h2>
+      <p>Los datos de registro estándar que tu navegador envía se graban automáticamente. Esto incluye:</p>
+      <ul>
+      <li>Dirección IP</li>
+      <li>Tipo y versión del navegador</li>
+      <li>Páginas visitadas y tiempo de permanencia</li>
+      </ul>
+      <h2>03. COOKIES</h2>
+      <p>Las cookies se utilizan únicamente para asegurar el correcto funcionamiento del sitio web. Puedes indicar a tu navegador que las rechace, aunque algunas secciones del servicio podrían volverse inaccesibles.</p>
+      <h2>04. PROTOCOLOS DE SEGURIDAD</h2>
+      <p>Se utilizan medios comercialmente aceptables para proteger tu información. Sin embargo, ningún método de transmisión por Internet es 100% seguro.</p>
+      <h2>05. ENLACES DE TERCEROS</h2>
+      <p>Este espacio puede contener enlaces a sitios externos. No se ejerce control sobre el contenido o las prácticas de privacidad de plataformas de terceros, ni se asume responsabilidad por ellos.</p>
+      <h2>06. PRIVACIDAD DE LOS MENORES</h2>
+      <p>Esta plataforma no se dirige a personas menores de 13 años, y no se recopilan a sabiendas datos personales de niños.</p>
+      <h2>07. CONTACTO</h2>
+      <p>Para cualquier pregunta sobre este manifiesto, puedes contactar directamente:</p>
+      <p><strong>Formulario de contacto:</strong> <a href="https://cupiedanny.com/contact/">https://cupiedanny.com/contact/</a></p>
+    </div>
+  </main>
+  <Footer lang="es" />
+</Layout>
+
+<style>
+  .legal {
+    max-width: 760px;
+    margin: 3rem auto 4rem;
+    padding: 0 1.5rem;
+  }
+  .legal h1 {
+    font-family: var(--font-section);
+    color: var(--color-accent);
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .legal-body h2 {
+    font-family: var(--font-nav);
+    font-size: 1.3rem;
+    color: var(--color-navy);
+    margin: 2rem 0 0.6rem;
+  }
+  .legal-body p, .legal-body li { line-height: 1.7; }
+  .legal-body hr { border: 0; border-top: 1px solid var(--color-rule); margin: 2rem 0; }
+</style>
